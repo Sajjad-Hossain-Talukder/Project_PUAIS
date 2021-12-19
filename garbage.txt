@@ -1,0 +1,500 @@
+<?php
+    session_start();
+    if ( isset($_SESSION['aid']) and $_SESSION['logged_in_status'] == true  ){
+        
+        if( @$_GET['logout'] == true ){
+            session_destroy();
+            header('location:index.php');
+        }
+
+    }
+    else {
+        session_destroy();
+        header('location:index.php');
+    }
+
+
+?>
+
+
+// Enroll rest
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&family=Roboto&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="login.css">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="HandheldFriendly" content="true">
+    <title>Student Enrollment</title>
+    <style>
+          th, td {
+            padding: 10px;
+            text-align : center;
+          }
+    </style>
+</head>
+
+
+<body style="font-family: poppins;">
+
+   offered Courses : 
+
+   <table> 
+       <tr>
+           <th>Semester</th>
+           <th>Course Code </th>
+           <th>Course Name</th>
+           <th>Section</th>
+           <th>Credit</th>
+           <th>Course Teacher</th>
+           <th>Action</th>
+       </tr>
+   
+
+   <?php
+        include("connection.php");
+
+        $sql = "select * from offered_courses" ; 
+        $q = mysqli_query($con,$sql);
+
+        while( $row = mysqli_fetch_array($q)){
+            
+            $semester	 = $row['semester'];
+            $course_code	 = $row['course_code'];
+            $course_name	 = $row['course_name'];
+            $section	 = $row['section'];
+            $session_year	 = $row['session_year'];
+            $prereq_code	 = $row['prereq_code'];
+            $credit	 = $row['credit'];
+            $T_Id	 = $row['T_Id'];
+            $T_name = $row['T_name'];
+    ?>
+
+                <tr>
+                    <td> <?php echo $semester; ?></td>
+                    <td> <?php echo $course_code; ?></td>
+                    <td> <?php echo $course_name; ?></td>
+                    <td> <?php echo $section; ?></td>
+                    <td> <?php echo $credit; ?></td>
+                    <td> <?php echo $T_name; ?></td>
+                    <td> 
+                    < type="text" name="type"/>  
+
+                    <input type="hidden" name="hidden_name" value="<?php echo $row["course_code"]; ?>" />  
+                    <input type="hidden" name="hidden_price" value="<?php echo $row["section"]; ?>" />  
+                    <input type="submit" name="add_to_cart" style="margin-top:5px;" class="btn btn-success" value="Add to Cart" />  
+                    </td>
+                </tr>
+            
+
+
+    <?php
+            if( isset($_POST['enr'])){
+                   echo "hola";
+            }
+
+        }
+    ?>
+
+</table>
+
+
+
+
+</body>
+</html>
+
+
+<?php
+include("connection.php");
+
+if( isset($_POST['sub'])){
+
+    $cc = $_POST['cc'];
+    $sec = $_POST['sec'];
+    $sess = $_POST['sess'];
+
+    $q = "select * from courses where course_code = '$cc'";
+
+    $r = mysqli_query($con,$q);
+
+    while ( $row = mysqli_fetch_array($r)){
+     $sm = $row['semester'];
+    $cn = $row['course_name'];
+    $prec = $row['prereq_course_code'];
+    $cdt = $row['credit'];
+    }
+
+
+  
+    $q = "insert into offered_courses values ('$sm','$cc','$cn','$sec','$sess','$prec','$cdt')";
+
+    mysqli_query($con,$q);
+    
+}
+
+?>
+
+
+
+<?php   
+ session_start();  
+ include("connection.php")
+ if(isset($_POST["add_to_cart"]))  
+ {  
+      if(isset($_SESSION["shopping_cart"]))  
+      {  
+           $item_array_id = array_column($_SESSION["shopping_cart"], "item_id");  
+           if(!in_array($_GET["id"], $item_array_id))  
+           {  
+                $count = count($_SESSION["shopping_cart"]);  
+                $item_array = array(  
+                     'item_id'               =>     $_GET["id"],  
+                     'item_name'               =>     $_POST["hidden_name"],  
+                     'item_price'          =>     $_POST["hidden_price"],  
+                     'item_quantity'          =>     $_POST["quantity"]  
+                );  
+                $_SESSION["shopping_cart"][$count] = $item_array;  
+           }  
+           else  
+           {  
+                echo '<script>alert("Item Already Added")</script>';  
+                echo '<script>window.location="index.php"</script>';  
+           }  
+      }  
+      else  
+      {  
+           $item_array = array(  
+                'item_id'               =>     $_GET["id"],  
+                'item_name'               =>     $_POST["hidden_name"],  
+                'item_price'          =>     $_POST["hidden_price"],  
+                'item_quantity'          =>     $_POST["quantity"]  
+           );  
+           $_SESSION["shopping_cart"][0] = $item_array;  
+      }  
+ }  
+ if(isset($_GET["action"]))  
+ {  
+      if($_GET["action"] == "delete")  
+      {  
+           foreach($_SESSION["shopping_cart"] as $keys => $values)  
+           {  
+                if($values["item_id"] == $_GET["id"])  
+                {  
+                     unset($_SESSION["shopping_cart"][$keys]);  
+                     echo '<script>alert("Item Removed")</script>';  
+                     echo '<script>window.location="index.php"</script>';  
+                }  
+           }  
+      }  
+ }  
+ ?>  
+
+
+ <!DOCTYPE html>  
+ <html>  
+      <head>  
+           <title>Webslesson Tutorial | Simple PHP Mysql Shopping Cart</title>  
+           <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>  
+           <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />  
+           <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>  
+      </head>  
+      <body>  
+           <br />  
+           <div class="container" style="width:700px;">  
+                <h3 text-align="center">Simple PHP Mysql Shopping Cart</h3><br />  
+                <?php  
+                $query = "SELECT * FROM offered_courses";  
+                $result = mysqli_query($connect, $query);  
+                if(mysqli_num_rows($result) > 0)  
+                {  
+                     while($row = mysqli_fetch_array($result))  
+                     {  
+                ?>  
+                <div class="col-md-4">  
+                     <form method="post" action="index.php?action=add&id=<?php echo $row["course_name"]; ?>">  
+                          <div style="border:1px solid #333; background-color:#f1f1f1; border-radius:5px; padding:16px;" text-align="center">  
+                               <img src="images/fr1.png" class="img-responsive" /><br />  
+                               <h4 class="text-info"><?php echo $row["course_name"]; ?></h4>  
+                               <h4 class="text-danger">$ <?php echo $row["course_name"]; ?></h4>  
+                               <input type="text" name="quantity" class="form-control" value="1" />  
+                               <input type="hidden" name="hidden_name" value="<?php echo $row["course_name"]; ?>" />  
+                               <input type="hidden" name="hidden_price" value="<?php echo $row["course_name"]; ?>" />  
+                               <input type="submit" name="add_to_cart" style="margin-top:5px;" class="btn btn-success" value="Add to Cart" />  
+                          </div>  
+                     </form>  
+                </div>  
+                <?php  
+                     }  
+                }  
+                ?>  
+                <div style="clear:both"></div>  
+                <br />  
+                <h3>Order Details</h3>  
+                <div class="table-responsive">  
+                     <table class="table table-bordered">  
+                          <tr>  
+                               <th width="40%">Item Name</th>  
+                               <th width="10%">Quantity</th>  
+                               <th width="20%">Price</th>  
+                               <th width="15%">Total</th>  
+                               <th width="5%">Action</th>  
+                          </tr>  
+                          <?php   
+                          if(!empty($_SESSION["shopping_cart"]))  
+                          {  
+                               $total = 0;  
+                               foreach($_SESSION["shopping_cart"] as $keys => $values)  
+                               {  
+                          ?>  
+                          <tr>  
+                               <td><?php echo $values["item_name"]; ?></td>  
+                               <td><?php echo $values["item_quantity"]; ?></td>  
+                               <td>$ <?php echo $values["item_price"]; ?></td>  
+                               <td>$ <?php echo number_format($values["item_quantity"] * $values["item_price"], 2); ?></td>  
+                               <td><a href="index.php?action=delete&id=<?php echo $values["item_id"]; ?>"><span class="text-danger">Remove</span></a></td>  
+                          </tr>  
+                          <?php  
+                                    $total = $total + ($values["item_quantity"] * $values["item_price"]);  
+                               }  
+                          ?>  
+                          <tr>  
+                               <td colspan="3" text-align="right">Total</td>  
+                               <td text-align="right">$ <?php echo number_format($total, 2); ?></td>  
+                               <td></td>  
+                          </tr>  
+                          <?php  
+                          }  
+                          ?>  
+                     </table>  
+                </div>  
+           </div>  
+           <br />  
+      </body>  
+ </html>
+
+
+
+
+<th> Section </th> 
+                        <th>Prerequisite Course Code</th>
+                        <th>Credits</th>
+                        <th>Course Teacher</th>
+
+
+
+                        <br>
+<h3>Offered Courses </h3>
+
+
+    <?php
+        include("connection.php");
+        if( isset($_POST['show'])){
+            $selsess = $_POST['selsess'];
+            $q = "select * from offered_courses where session_year = '$selsess'";
+            $r = mysqli_query($con,$q);
+    ?>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>	
+                <th>Semester</th>
+                <th>Course Code </th> 
+                <th> Course Name </th> 
+                <th> Section </th> 
+                <th>Prerequisite Course Code</th>
+                <th>Credits</th>
+                <th>Course Teacher</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+            while($row = mysqli_fetch_array($r)){
+            ?>
+                <tr>
+                    <td><?php echo $row['semester'];?></td>
+                    <td><?php echo $row['course_code']; ?></td>
+                    <td><?php echo $row['course_name']; ?></td>
+                    <td><?php echo $row['section']; ?></td>
+                    <td><?php echo $row['prereq_code']; ?></td>
+                    <td><?php echo $row['credit']; ?></td>
+                    <td><?php echo $row['T_name']; ?></td>
+                </tr>
+
+            <?php
+            }
+            ?>
+            </tbody>
+
+        </table>
+    </div>
+
+    <?php
+        }
+    ?>
+<
+ 
+
+------------------------------------------------------------------------------
+<?php
+    require('dbcon.php');
+    session_start();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+     <head>
+     <meta charset="UTF-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Login</title>
+     <link rel="stylesheet" href="style.css">
+     </head>
+     <body>
+
+          <form class = "form" method="post" name="login">
+          <h1 class="login-title">Login</h1>
+          <input type="text" name="username" class="login-input" id="username" placeholder="Username" autocomplete="off" required>
+          <input type="password" name="Password" class="login-input" id="Password" placeholder = "Password" autocomplete = "off" required>
+          <input type="submit" value="Login" name="submit" class="login-button">
+          <p class="link"><a href="registration.php">Click to Registration</a></p>
+     </form>
+
+
+     </body>
+</html>
+ <?php
+
+    if(isset($_POST['username']))
+    {
+          $user = $_POST['username'];
+          $password = $_POST['Password'];
+
+          $sql = "select * from users where username = '$user' AND password = '$password'";
+
+          $result = mysqli_query($con,$sql);
+          $rows = mysqli_num_rows($result);
+          if($rows == 1)
+          {
+               $_SESSION['username'] = $user;
+               header("Location: dashboard.php");
+          }
+          else
+          {
+            echo "<div class='form'>
+                <h3>Incorrect username or password!</h3><br/>
+                <p class='link'><a href='login.php'>Click to Login Again</a></p>
+                 </div>";
+          }
+
+     }  
+?>
+
+------------------------------------------------------------------------------
+<?php
+     session_start();
+     require('dbcon.php');
+     require('auth_session.php');
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Inventory Management System</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+ 	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+ 	<script type="text/javascript" src="./js/main.js"></script>
+ </head>
+<body>
+	<!-- Navbar -->
+	
+	<br/><br/>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4">
+				<div class="card mx-auto">
+				  <img class="card-img-top mx-auto" style="width:60%;" src="./images/user.png" alt="Card image cap">
+				  <div class="card-body">
+				    <h4 class="card-title">Profile Info</h4>
+				    <p class="card-text"><i class="fa fa-user">&nbsp;</i>Rizwan Khan</p>
+				    <p class="card-text"><i class="fa fa-user">&nbsp;</i>Admin</p>
+				    <p class="card-text">Last Login : xxxx-xx-xx</p>
+				    <a href="#" class="btn btn-primary"><i class="fa fa-edit">&nbsp;</i>Edit Profile</a>
+				  </div>
+				</div>
+			</div>
+			<div class="col-md-8">
+				<div class="jumbotron" style="width:100%;height:100%;">
+					<h1>Welcome Admin,</h1>
+					<div class="row">
+						<div class="col-sm-6">
+							<iframe src="http://free.timeanddate.com/clock/i616j2aa/n1993/szw160/szh160/cf100/hnce1ead6" frameborder="0" width="160" height="160"></iframe>
+
+						</div>
+						<div class="col-sm-6">
+							<div class="card">
+						      <div class="card-body">
+						        <h4 class="card-title">New Orders</h4>
+						        <p class="card-text">Here you can make invoices and create new orders</p>
+						        <a href="new_order.php" class="btn btn-primary">New Orders</a>
+						      </div>
+						    </div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<p></p>
+	<p></p>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4">
+				<div class="card">
+						<div class="card-body">
+						<h4 class="card-title">Categories</h4>
+						<p class="card-text">Here you can manage your categories and you add new parent and sub categories</p>
+						<a href="#" data-toggle="modal" data-target="#form_category" class="btn btn-primary">Add</a>
+						<a href="manage_categories.php" class="btn btn-primary">Manage</a>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="card">
+						<div class="card-body">
+						<h4 class="card-title">Brands</h4>
+						<p class="card-text">Here you can manage your brand and you add new brand</p>
+						<a href="#" data-toggle="modal" data-target="#form_brand" class="btn btn-primary">Add</a>
+						<a href="manage_brand.php" class="btn btn-primary">Manage</a>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="card">
+						<div class="card-body">
+						<h4 class="card-title">Products</h4>
+						<p class="card-text">Here you can manage your prpducts and you add new products</p>
+						<a href="#" data-toggle="modal" data-target="#form_products" class="btn btn-primary">Add</a>
+						<a href="manage_product.php" class="btn btn-primary">Manage</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+</html>
